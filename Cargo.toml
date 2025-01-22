@@ -1,0 +1,15 @@
+[package]
+name = "expense-tracker-backend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4"
+serde = "1.0"
+mongodb = "3"
+futures = "0.3"
+actix-cors = "0.6"
+bson = "2.7.0"
+chrono = { version = "0.4", features = ["serde"] }
+bcrypt = "0.14.0"
+jsonwebtoken = "8.1.1"
