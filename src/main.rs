@@ -10,12 +10,13 @@ use actix_web::{
     dev::{ServiceRequest, ServiceResponse},
     get,
     http::{header, StatusCode},
-    middleware::{from_fn, Next},
+    middleware::{from_fn, Logger, Next},
     post, web, App, Error, HttpMessage, HttpRequest, HttpResponse, HttpResponseBuilder, HttpServer,
     Responder,
 };
 use bson::{doc, oid::ObjectId};
 use chrono::Utc;
+use env_logger::Env;
 use futures::TryStreamExt;
 use models::{
     Category, CreateUser, FetchTransactions, FetchUsers, LoginUser, Token, Transaction, User,
@@ -225,7 +226,10 @@ async fn main() -> std::io::Result<()> {
     let uri = std::env::var("MONGODB_URI").unwrap_or_else(|_| "mongodb://localhost:27017".into());
     println!("connecting to {}", uri);
     let client = Client::with_uri_str(uri).await.expect("failed to connect");
+
     println!("connected");
+    env_logger::init_from_env(Env::default().default_filter_or("info"));
+
     let _cors = Cors::default()
         .allowed_origin("*")
         .allowed_methods(vec!["GET", "POST"])
@@ -236,6 +240,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(client.clone()))
             .wrap(from_fn(auth_middle))
+            .wrap(Logger::default())
+            .wrap(Logger::new("%a %{User-Agent}i"))
             .service(hello)
             .service(get_cate)
             //.service(get_users)
@@ -244,7 +250,7 @@ async fn main() -> std::io::Result<()> {
             .service(get_transactions)
             .service(create_transaction)
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("0.0.0.0", 80))?
     .run()
     .await
 }

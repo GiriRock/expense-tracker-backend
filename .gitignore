@@ -1,2 +1,4 @@
 /target
 start.sh
+build.sh
+compose.yaml
